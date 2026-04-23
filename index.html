@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Dystopian Wasteland - A-Frame (Controls Fixed)</title>
+    <title>Dystopian Wasteland - VR + Desktop Movement</title>
     <style>
         body {
             margin: 0;
@@ -45,16 +45,19 @@
 <body>
     <div class="info">
         ⚡ DYSTOPIAN WORK SITE ⚡<br>
-        WASD / ARROWS to move | Drag to look
+        WASD / ARROWS (desktop) | VR: thumbstick to move
     </div>
     <div class="controls-hint">
-        🚧 ART WORKER SIGNS • RUINS • BARRELS • BONES 🚧
+        🚧 ART WORKER SIGNS • RUINS • BARRELS • BONES 🚧<br>
+        Click 🥽 to enter VR
     </div>
 
+    <!-- A-Frame core + extras for movement controls -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <!-- Use standard components, no extra movement add-ons to avoid conflicts -->
+    <script src="https://unpkg.com/aframe-extras@7.2.0/dist/aframe-extras.js"></script>
 
-    <a-scene background="color: #1a1008" fog="type: exponential; color: #1a1008; density: 0.018">
+    <a-scene webxr="optionalFeatures: local-floor;" background="color: #1a1008"
+        fog="type: exponential; color: #1a1008; density: 0.018">
 
         <!-- Lighting -->
         <a-entity light="type: ambient; color: #554433; intensity: 0.7"></a-entity>
@@ -66,28 +69,28 @@
         <a-plane rotation="-90 0 0" width="200" height="200" color="#3a2e1a" receive-shadow="true"
             material="src: https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg; repeat: 8 8; roughness: 0.8"></a-plane>
 
-        <!-- Player: camera with WASD and look controls (no conflicting movement controllers) -->
-        <a-entity id="player" position="0 1.6 0">
-            <a-entity camera="fov: 80" look-controls="pointerLockEnabled: true"
-                wasd-controls="acceleration: 12; fly: false">
+        <!-- ========== VR‑READY CAMERA RIG ========== -->
+        <!-- movement-controls handles both VR thumbstick and WASD/arrows -->
+        <a-entity id="rig" movement-controls="speed: 0.25; constrainToNavMesh: false">
+            <a-entity camera="fov: 80" position="0 1.6 0" look-controls="pointerLockEnabled: true">
+                <!-- Torch light (headlamp) -->
                 <a-light type="spot" color="#fff5cc" intensity="1.2" distance="25" angle="35" penumbra="0.4"
                     position="0 0.2 -0.3" target="#light-target"></a-light>
                 <a-entity id="light-target" position="0 0 -5"></a-entity>
             </a-entity>
         </a-entity>
 
-        <!-- ========== ALL WORLD OBJECTS GENERATED VIA JAVASCRIPT ========== -->
+        <!-- ========== ALL WORLD OBJECTS (same as before, fully working) ========== -->
         <script>
             (function () {
                 const sceneEl = document.querySelector('a-scene');
                 if (!sceneEl) return;
 
-                // Helper to add random rotation
                 function randomRotY(entity) {
                     entity.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
                 }
 
-                // 1. RUINS (buildings)
+                // 1. RUINS
                 for (let i = 0; i < 35; i++) {
                     const angle = Math.random() * Math.PI * 2;
                     const r = 15 + Math.random() * 70;
@@ -282,7 +285,7 @@
                     sceneEl.appendChild(sign);
                 }
 
-                // 7. GIANT BONES (ribcage style)
+                // 7. GIANT BONES
                 for (let i = 0; i < 20; i++) {
                     const angle = Math.random() * Math.PI * 2;
                     const r = 15 + Math.random() * 70;
@@ -414,7 +417,6 @@
                     imgPlane.setAttribute('cast-shadow', 'false');
                     group.appendChild(imgPlane);
 
-                    // hazard stripes
                     for (let i = 0; i < 7; i++) {
                         const stripe = document.createElement('a-box');
                         const xPos = -1.5 + i * 0.5;
@@ -438,18 +440,16 @@
                     const z = Math.sin(angle) * r;
                     createArtSign(x, z, Math.random() * 360);
                 }
-                // Extra signs near spawn
                 for (let i = 0; i < 12; i++) {
                     const x = (Math.random() - 0.5) * 50;
                     const z = (Math.random() - 0.5) * 50;
                     createArtSign(x, z, Math.random() * 360);
                 }
-                // Guaranteed signs near player start
                 createArtSign(0, -12, 0);
                 createArtSign(6, -8, 45);
                 createArtSign(-7, -10, -30);
 
-                // 10. Concrete patches (ground variation)
+                // 10. Concrete patches
                 for (let i = 0; i < 80; i++) {
                     const angle = Math.random() * Math.PI * 2;
                     const r = 5 + Math.random() * 90;
@@ -466,7 +466,7 @@
                     sceneEl.appendChild(patch);
                 }
 
-                console.log('World generation complete: ruins, barrels, beams, bones, cranes, signs, etc.');
+                console.log('World fully generated — VR movement ready.');
             })();
         </script>
 
