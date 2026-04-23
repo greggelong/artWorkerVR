@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Dystopian Wasteland - A-Frame (Controls Fixed)</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+
+        .info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #ff6600;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 15px;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 100;
+            font-size: 12px;
+            border-left: 3px solid #ff6600;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #ffcc00;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 15px;
+            border-radius: 8px;
+            pointer-events: none;
+            font-size: 11px;
+            text-align: right;
+            border-right: 3px solid #ffcc00;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="info">
+        ⚡ DYSTOPIAN WORK SITE ⚡<br>
+        WASD / ARROWS to move | Drag to look
+    </div>
+    <div class="controls-hint">
+        🚧 ART WORKER SIGNS • RUINS • BARRELS • BONES 🚧
+    </div>
+
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <!-- Use standard components, no extra movement add-ons to avoid conflicts -->
+
+    <a-scene background="color: #1a1008" fog="type: exponential; color: #1a1008; density: 0.018">
+
+        <!-- Lighting -->
+        <a-entity light="type: ambient; color: #554433; intensity: 0.7"></a-entity>
+        <a-entity light="type: directional; color: #ff9944; intensity: 1.1; position: -30 60 -20"
+            cast-shadow="true"></a-entity>
+        <a-entity light="type: directional; color: #885522; intensity: 0.5; position: 20 10 30"></a-entity>
+
+        <!-- Ground with tiled texture -->
+        <a-plane rotation="-90 0 0" width="200" height="200" color="#3a2e1a" receive-shadow="true"
+            material="src: https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg; repeat: 8 8; roughness: 0.8"></a-plane>
+
+        <!-- Player: camera with WASD and look controls (no conflicting movement controllers) -->
+        <a-entity id="player" position="0 1.6 0">
+            <a-entity camera="fov: 80" look-controls="pointerLockEnabled: true"
+                wasd-controls="acceleration: 12; fly: false">
+                <a-light type="spot" color="#fff5cc" intensity="1.2" distance="25" angle="35" penumbra="0.4"
+                    position="0 0.2 -0.3" target="#light-target"></a-light>
+                <a-entity id="light-target" position="0 0 -5"></a-entity>
+            </a-entity>
+        </a-entity>
+
+        <!-- ========== ALL WORLD OBJECTS GENERATED VIA JAVASCRIPT ========== -->
+        <script>
+            (function () {
+                const sceneEl = document.querySelector('a-scene');
+                if (!sceneEl) return;
+
+                // Helper to add random rotation
+                function randomRotY(entity) {
+                    entity.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
+                }
+
+                // 1. RUINS (buildings)
+                for (let i = 0; i < 35; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 15 + Math.random() * 70;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const ruin = document.createElement('a-entity');
+                    ruin.setAttribute('position', `${x} 0 ${z}`);
+                    randomRotY(ruin);
+                    const main = document.createElement('a-box');
+                    const w = 3 + Math.random() * 4;
+                    const h = 3 + Math.random() * 6;
+                    const d = 3 + Math.random() * 4;
+                    main.setAttribute('width', w);
+                    main.setAttribute('height', h);
+                    main.setAttribute('depth', d);
+                    main.setAttribute('color', '#5a5550');
+                    main.setAttribute('position', `0 ${h / 2} 0`);
+                    main.setAttribute('cast-shadow', 'true');
+                    ruin.appendChild(main);
+
+                    const top = document.createElement('a-box');
+                    top.setAttribute('width', w - 0.5);
+                    top.setAttribute('height', 0.5);
+                    top.setAttribute('depth', d - 0.5);
+                    top.setAttribute('color', '#38322e');
+                    top.setAttribute('position', `0 ${h + 0.25} 0`);
+                    top.setAttribute('cast-shadow', 'true');
+                    ruin.appendChild(top);
+
+                    for (let j = 0; j < 4; j++) {
+                        const rubble = document.createElement('a-box');
+                        rubble.setAttribute('width', 0.8);
+                        rubble.setAttribute('height', 0.3);
+                        rubble.setAttribute('depth', 0.8);
+                        rubble.setAttribute('color', '#7a4a3a');
+                        rubble.setAttribute('position', `${(Math.random() - 0.5) * w} 0.15 ${(Math.random() - 0.5) * d}`);
+                        rubble.setAttribute('cast-shadow', 'true');
+                        ruin.appendChild(rubble);
+                    }
+                    sceneEl.appendChild(ruin);
+                }
+
+                // 2. BRICK PILES
+                for (let i = 0; i < 60; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 10 + Math.random() * 85;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const pile = document.createElement('a-entity');
+                    pile.setAttribute('position', `${x} 0 ${z}`);
+                    randomRotY(pile);
+                    for (let b = 0; b < 5; b++) {
+                        const brick = document.createElement('a-box');
+                        brick.setAttribute('width', 0.6);
+                        brick.setAttribute('height', 0.25);
+                        brick.setAttribute('depth', 0.5);
+                        brick.setAttribute('color', ['#7a3a2a', '#4a2218', '#8a4a2a'][Math.floor(Math.random() * 3)]);
+                        brick.setAttribute('position', `${(Math.random() - 0.5) * 1.2} ${Math.random() * 0.6} ${(Math.random() - 0.5) * 1.2}`);
+                        brick.setAttribute('rotation', `${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}`);
+                        brick.setAttribute('cast-shadow', 'true');
+                        pile.appendChild(brick);
+                    }
+                    sceneEl.appendChild(pile);
+                }
+
+                // 3. STEEL BEAMS
+                for (let i = 0; i < 50; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 10 + Math.random() * 85;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const beam = document.createElement('a-entity');
+                    beam.setAttribute('position', `${x} ${0.2 + Math.random() * 0.5} ${z}`);
+                    beam.setAttribute('rotation', `${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}`);
+                    const box = document.createElement('a-box');
+                    box.setAttribute('width', '0.3');
+                    box.setAttribute('height', '2.5');
+                    box.setAttribute('depth', '0.3');
+                    box.setAttribute('color', '#445566');
+                    box.setAttribute('metalness', '0.7');
+                    box.setAttribute('roughness', '0.3');
+                    box.setAttribute('cast-shadow', 'true');
+                    beam.appendChild(box);
+                    sceneEl.appendChild(beam);
+                }
+
+                // 4. FIRE BARRELS (with point light)
+                for (let i = 0; i < 30; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 10 + Math.random() * 80;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const barrel = document.createElement('a-entity');
+                    barrel.setAttribute('position', `${x} 0 ${z}`);
+                    const cylinder = document.createElement('a-cylinder');
+                    cylinder.setAttribute('radius', '0.55');
+                    cylinder.setAttribute('height', '1.2');
+                    cylinder.setAttribute('color', '#7a3a1a');
+                    cylinder.setAttribute('position', '0 0.6 0');
+                    cylinder.setAttribute('cast-shadow', 'true');
+                    barrel.appendChild(cylinder);
+
+                    const hoop1 = document.createElement('a-torus');
+                    hoop1.setAttribute('radius', '0.6');
+                    hoop1.setAttribute('thickness', '0.05');
+                    hoop1.setAttribute('color', '#8899aa');
+                    hoop1.setAttribute('rotation', '90 0 0');
+                    hoop1.setAttribute('position', '0 0.3 0');
+                    barrel.appendChild(hoop1);
+
+                    const hoop2 = hoop1.cloneNode();
+                    hoop2.setAttribute('position', '0 0.9 0');
+                    barrel.appendChild(hoop2);
+
+                    const fireGlow = document.createElement('a-sphere');
+                    fireGlow.setAttribute('radius', '0.25');
+                    fireGlow.setAttribute('color', '#ff3300');
+                    fireGlow.setAttribute('position', '0 1.2 0');
+                    fireGlow.setAttribute('light', 'type: point; intensity: 1.0; color: #ff4400; distance: 12');
+                    barrel.appendChild(fireGlow);
+
+                    const ember = document.createElement('a-sphere');
+                    ember.setAttribute('radius', '0.18');
+                    ember.setAttribute('color', '#ff6600');
+                    ember.setAttribute('material', 'emissive: #ff3300; emissiveIntensity: 0.6');
+                    ember.setAttribute('position', '0 1.3 0');
+                    barrel.appendChild(ember);
+
+                    sceneEl.appendChild(barrel);
+                }
+
+                // 5. HARDHATS
+                for (let i = 0; i < 30; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 10 + Math.random() * 85;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const hat = document.createElement('a-entity');
+                    hat.setAttribute('position', `${x} ${0.1 + Math.random() * 0.3} ${z}`);
+                    randomRotY(hat);
+                    const dome = document.createElement('a-sphere');
+                    dome.setAttribute('radius', '0.35');
+                    dome.setAttribute('color', '#ffaa00');
+                    dome.setAttribute('metalness', '0.8');
+                    dome.setAttribute('scale', '1 0.4 1');
+                    dome.setAttribute('position', '0 0.2 0');
+                    hat.appendChild(dome);
+                    const brim = document.createElement('a-torus');
+                    brim.setAttribute('radius', '0.45');
+                    brim.setAttribute('thickness', '0.08');
+                    brim.setAttribute('color', '#ffaa00');
+                    brim.setAttribute('rotation', '90 0 0');
+                    brim.setAttribute('position', '0 0.05 0');
+                    hat.appendChild(brim);
+                    sceneEl.appendChild(hat);
+                }
+
+                // 6. WARNING SIGNS (yellow/black)
+                for (let i = 0; i < 25; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 10 + Math.random() * 85;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const sign = document.createElement('a-entity');
+                    sign.setAttribute('position', `${x} 0 ${z}`);
+                    randomRotY(sign);
+
+                    const post = document.createElement('a-cylinder');
+                    post.setAttribute('radius', '0.08');
+                    post.setAttribute('height', '3.5');
+                    post.setAttribute('color', '#445566');
+                    post.setAttribute('position', '0 1.8 0');
+                    sign.appendChild(post);
+
+                    const board = document.createElement('a-box');
+                    board.setAttribute('width', '1.8');
+                    board.setAttribute('height', '1.2');
+                    board.setAttribute('depth', '0.1');
+                    board.setAttribute('color', '#ffcc00');
+                    board.setAttribute('position', '0 3.2 0');
+                    sign.appendChild(board);
+
+                    for (let s = 0; s < 4; s++) {
+                        const stripe = document.createElement('a-box');
+                        stripe.setAttribute('width', '0.35');
+                        stripe.setAttribute('height', '1.2');
+                        stripe.setAttribute('depth', '0.12');
+                        stripe.setAttribute('color', s % 2 === 0 ? '#111111' : '#ffcc00');
+                        stripe.setAttribute('position', `${-0.8 + s * 0.5} 3.2 0.06`);
+                        sign.appendChild(stripe);
+                    }
+                    sceneEl.appendChild(sign);
+                }
+
+                // 7. GIANT BONES (ribcage style)
+                for (let i = 0; i < 20; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 15 + Math.random() * 70;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const boneGroup = document.createElement('a-entity');
+                    boneGroup.setAttribute('position', `${x} 0 ${z}`);
+                    randomRotY(boneGroup);
+
+                    const leftRib = document.createElement('a-cylinder');
+                    leftRib.setAttribute('radius', '0.15');
+                    leftRib.setAttribute('height', '3');
+                    leftRib.setAttribute('color', '#d4c9a8');
+                    leftRib.setAttribute('rotation', '0 0 40');
+                    leftRib.setAttribute('position', '0.8 0.5 0');
+                    boneGroup.appendChild(leftRib);
+
+                    const rightRib = document.createElement('a-cylinder');
+                    rightRib.setAttribute('radius', '0.15');
+                    rightRib.setAttribute('height', '3');
+                    rightRib.setAttribute('color', '#d4c9a8');
+                    rightRib.setAttribute('rotation', '0 0 -40');
+                    rightRib.setAttribute('position', '-0.8 0.5 0');
+                    boneGroup.appendChild(rightRib);
+
+                    const joint = document.createElement('a-sphere');
+                    joint.setAttribute('radius', '0.3');
+                    joint.setAttribute('color', '#d4c9a8');
+                    joint.setAttribute('position', '0 1.2 0');
+                    boneGroup.appendChild(joint);
+
+                    sceneEl.appendChild(boneGroup);
+                }
+
+                // 8. CRANES
+                for (let i = 0; i < 12; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 20 + Math.random() * 60;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const crane = document.createElement('a-entity');
+                    crane.setAttribute('position', `${x} 0 ${z}`);
+                    randomRotY(crane);
+
+                    const tower = document.createElement('a-box');
+                    tower.setAttribute('width', '1');
+                    tower.setAttribute('height', '12');
+                    tower.setAttribute('depth', '1');
+                    tower.setAttribute('color', '#556677');
+                    tower.setAttribute('position', '0 6 0');
+                    crane.appendChild(tower);
+
+                    const arm = document.createElement('a-box');
+                    arm.setAttribute('width', '14');
+                    arm.setAttribute('height', '0.4');
+                    arm.setAttribute('depth', '0.6');
+                    arm.setAttribute('color', '#8899aa');
+                    arm.setAttribute('position', '5 12 0');
+                    crane.appendChild(arm);
+
+                    const cable = document.createElement('a-cylinder');
+                    cable.setAttribute('radius', '0.08');
+                    cable.setAttribute('height', '5');
+                    cable.setAttribute('color', '#aabbcc');
+                    cable.setAttribute('position', '8 9.5 0');
+                    crane.appendChild(cable);
+
+                    const hook = document.createElement('a-torus');
+                    hook.setAttribute('radius', '0.4');
+                    hook.setAttribute('thickness', '0.08');
+                    hook.setAttribute('color', '#ccaa77');
+                    hook.setAttribute('rotation', '90 0 0');
+                    hook.setAttribute('position', '8 6.8 0');
+                    crane.appendChild(hook);
+
+                    sceneEl.appendChild(crane);
+                }
+
+                // 9. ART WORKER SIGNS (with random images)
+                const signImages = [
+                    'aw.jpg',   // <-- put your own image in the same folder
+                    'a.jpg', 'b.jpg', 'c.jpg', 'd.png', 'e.png', 'f.jpg', 'h.jpg', 'i.jpg', 'j.jpg'
+                ];
+
+                function createArtSign(x, z, rotY) {
+                    const group = document.createElement('a-entity');
+                    group.setAttribute('position', `${x} 0 ${z}`);
+                    group.setAttribute('rotation', `0 ${rotY} 0`);
+
+                    const leftPost = document.createElement('a-cylinder');
+                    leftPost.setAttribute('radius', '0.1');
+                    leftPost.setAttribute('height', '5.5');
+                    leftPost.setAttribute('color', '#445566');
+                    leftPost.setAttribute('position', '-1.8 2.75 0');
+                    leftPost.setAttribute('cast-shadow', 'true');
+                    group.appendChild(leftPost);
+
+                    const rightPost = document.createElement('a-cylinder');
+                    rightPost.setAttribute('radius', '0.1');
+                    rightPost.setAttribute('height', '5.5');
+                    rightPost.setAttribute('color', '#445566');
+                    rightPost.setAttribute('position', '1.8 2.75 0');
+                    rightPost.setAttribute('cast-shadow', 'true');
+                    group.appendChild(rightPost);
+
+                    const board = document.createElement('a-box');
+                    board.setAttribute('width', '4.2');
+                    board.setAttribute('height', '1.8');
+                    board.setAttribute('depth', '0.12');
+                    board.setAttribute('color', '#1a1a1a');
+                    board.setAttribute('position', '0 4.2 0');
+                    board.setAttribute('receive-shadow', 'true');
+                    group.appendChild(board);
+
+                    const frame = document.createElement('a-box');
+                    frame.setAttribute('width', '4.4');
+                    frame.setAttribute('height', '2.0');
+                    frame.setAttribute('depth', '0.08');
+                    frame.setAttribute('color', '#ffcc00');
+                    frame.setAttribute('position', '0 4.2 -0.03');
+                    group.appendChild(frame);
+
+                    const randImg = signImages[Math.floor(Math.random() * signImages.length)];
+                    const imgPlane = document.createElement('a-plane');
+                    imgPlane.setAttribute('width', '1.2');
+                    imgPlane.setAttribute('height', '1.6');
+                    imgPlane.setAttribute('position', '0 4.2 0.13');
+                    imgPlane.setAttribute('material', `src: ${randImg}; side: double; transparent: true`);
+                    imgPlane.setAttribute('cast-shadow', 'false');
+                    group.appendChild(imgPlane);
+
+                    // hazard stripes
+                    for (let i = 0; i < 7; i++) {
+                        const stripe = document.createElement('a-box');
+                        const xPos = -1.5 + i * 0.5;
+                        const color = i % 2 === 0 ? '#ffcc00' : '#111111';
+                        stripe.setAttribute('width', '0.5');
+                        stripe.setAttribute('height', '0.35');
+                        stripe.setAttribute('depth', '0.1');
+                        stripe.setAttribute('color', color);
+                        stripe.setAttribute('position', `${xPos} 3.4 0.02`);
+                        group.appendChild(stripe);
+                    }
+
+                    sceneEl.appendChild(group);
+                }
+
+                // Place many ART WORKER signs
+                for (let i = 0; i < 40; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 10 + Math.random() * 85;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    createArtSign(x, z, Math.random() * 360);
+                }
+                // Extra signs near spawn
+                for (let i = 0; i < 12; i++) {
+                    const x = (Math.random() - 0.5) * 50;
+                    const z = (Math.random() - 0.5) * 50;
+                    createArtSign(x, z, Math.random() * 360);
+                }
+                // Guaranteed signs near player start
+                createArtSign(0, -12, 0);
+                createArtSign(6, -8, 45);
+                createArtSign(-7, -10, -30);
+
+                // 10. Concrete patches (ground variation)
+                for (let i = 0; i < 80; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = 5 + Math.random() * 90;
+                    const x = Math.cos(angle) * r;
+                    const z = Math.sin(angle) * r;
+                    const patch = document.createElement('a-plane');
+                    patch.setAttribute('width', '3');
+                    patch.setAttribute('height', '3');
+                    patch.setAttribute('color', '#5a5550');
+                    patch.setAttribute('rotation', '-90 0 0');
+                    patch.setAttribute('position', `${x} 0.02 ${z}`);
+                    patch.setAttribute('material', 'roughness: 0.9');
+                    patch.setAttribute('receive-shadow', 'true');
+                    sceneEl.appendChild(patch);
+                }
+
+                console.log('World generation complete: ruins, barrels, beams, bones, cranes, signs, etc.');
+            })();
+        </script>
+
+        <!-- Atmospheric dust particles -->
+        <a-entity
+            particle-system="preset: dust; color: #aa8855; particleCount: 400; size: 0.08; opacity: 0.25; position: 0 5 0; velocity: 0 0.5 0; acceleration: 0 -0.1 0;"></a-entity>
+
+        <!-- Distant smoke patches -->
+        <a-entity position="-20 0.5 -25">
+            <a-cylinder radius="4" height="0.6" color="#332211" opacity="0.3" transparent="true"></a-cylinder>
+        </a-entity>
+        <a-entity position="25 0.5 22">
+            <a-cylinder radius="5" height="0.7" color="#332211" opacity="0.3" transparent="true"></a-cylinder>
+        </a-entity>
+
+        <a-sky color="#1a1008" radius="300"></a-sky>
+
+    </a-scene>
+</body>
+
+</html>
